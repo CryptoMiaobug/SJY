@@ -1,7 +1,7 @@
 // API 配置
 const CONFIG = {
-    // Cloudflare Tunnel 公网 URL
-    apiUrl: 'https://opponent-alleged-studies-formatting.trycloudflare.com',
+    // ngrok 公网 URL
+    apiUrl: 'https://cocoa-landowner-pectin.ngrok-free.dev',
     
     // 请求超时时间（毫秒）
     timeout: 30000,
