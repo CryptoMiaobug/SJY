@@ -309,7 +309,7 @@
                 removeThinkingMessage(thinkingId);
 
                 if (data.success) {
-                    addMessage('assistant', data.answer, data.sources);
+                    addMessage('assistant', data.answer, data.sources, data.files);
                 } else {
                     throw new Error(data.error || '查询失败');
                 }
@@ -353,16 +353,20 @@
             }
         }
 
-        function addMessage(role, text, sources = []) {
+        function addMessage(role, text, sources = [], files = []) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
 
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'bubble';
-            bubbleDiv.textContent = text;
+            
+            // 移除文本中的 [FILE:xxx] 标记
+            const cleanText = text.replace(/\[FILE:[^\]]+\]/g, '').trim();
+            bubbleDiv.textContent = cleanText;
 
             messageDiv.appendChild(bubbleDiv);
 
+            // 显示参考文档
             if (sources && sources.length > 0) {
                 const sourcesDiv = document.createElement('div');
                 sourcesDiv.className = 'sources';
@@ -370,8 +374,40 @@
                 messageDiv.appendChild(sourcesDiv);
             }
 
+            // 显示可下载文件
+            if (files && files.length > 0) {
+                const filesDiv = document.createElement('div');
+                filesDiv.className = 'sources';
+                filesDiv.innerHTML = `<strong>📎 可下载文件：</strong>`;
+                
+                files.forEach(file => {
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = `📥 ${file}`;
+                    downloadBtn.style.cssText = `
+                        margin: 5px 5px 0 0;
+                        padding: 8px 16px;
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 13px;
+                    `;
+                    downloadBtn.onclick = () => downloadFile(file);
+                    filesDiv.appendChild(downloadBtn);
+                });
+                
+                messageDiv.appendChild(filesDiv);
+            }
+
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function downloadFile(filename) {
+            const token = localStorage.getItem('token');
+            const url = `${CONFIG.apiUrl}/api/download?token=${encodeURIComponent(token)}&file=${encodeURIComponent(filename)}`;
+            window.open(url, '_blank');
         }
 
         function logout() {
