@@ -1,7 +1,7 @@
 // API 配置
 const CONFIG = {
     // Cloudflare Tunnel 公网 URL
-    apiUrl: 'https://aus-compatible-arctic-searched.trycloudflare.com',
+    apiUrl: 'https://opponent-alleged-studies-formatting.trycloudflare.com',
     
     // 请求超时时间（毫秒）
     timeout: 30000,
