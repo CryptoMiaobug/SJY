@@ -66,6 +66,9 @@ async function sendMessage(tab) {
     addMessage(tab, 'user', question);
     userInput.value = '';
     
+    // 添加"正在思考"状态
+    const thinkingId = addThinkingMessage(tab);
+    
     // 禁用发送按钮
     sendBtn.disabled = true;
     sendBtn.innerHTML = '<span class="loading"></span>';
@@ -84,6 +87,9 @@ async function sendMessage(tab) {
             })
         });
         
+        // 移除"正在思考"
+        removeThinkingMessage(thinkingId);
+        
         if (!response.ok) {
             if (response.status === 401) {
                 addMessage(tab, 'bot', '⚠️ 登录已过期，请重新登录');
@@ -100,10 +106,45 @@ async function sendMessage(tab) {
         
     } catch (error) {
         console.error('发送失败:', error);
+        // 移除"正在思考"
+        removeThinkingMessage(thinkingId);
         addMessage(tab, 'bot', '⚠️ 抱歉，服务暂时不可用，请稍后重试。');
     } finally {
         sendBtn.disabled = false;
         sendBtn.textContent = '发送';
+    }
+}
+
+// 添加"正在思考"消息
+function addThinkingMessage(tab) {
+    const messagesContainer = document.getElementById(`${tab}-messages`);
+    
+    const thinkingDiv = document.createElement('div');
+    thinkingDiv.className = 'message bot-message';
+    thinkingDiv.id = `thinking-${Date.now()}`;
+    
+    thinkingDiv.innerHTML = `
+        <div class="thinking-message">
+            <span>正在思考</span>
+            <div class="thinking-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(thinkingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    return thinkingDiv.id;
+}
+
+// 移除"正在思考"消息
+function removeThinkingMessage(thinkingId) {
+    const thinkingDiv = document.getElementById(thinkingId);
+    if (thinkingDiv) {
+        thinkingDiv.remove();
     }
 }
 

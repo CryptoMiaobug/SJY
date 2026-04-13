@@ -154,6 +154,51 @@ header p {
     margin: 5px 0;
 }
 
+/* 思考中状态 */
+.thinking-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 70%;
+}
+
+.thinking-dots {
+    display: flex;
+    gap: 5px;
+}
+
+.thinking-dots span {
+    width: 8px;
+    height: 8px;
+    background: #667eea;
+    border-radius: 50%;
+    animation: thinking 1.4s infinite ease-in-out both;
+}
+
+.thinking-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.thinking-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes thinking {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 .input-container {
     display: flex;
     padding: 20px;
