@@ -54,14 +54,6 @@ async function sendMessage(tab) {
     
     if (!question) return;
     
-    // 获取 token
-    const token = localStorage.getItem('token');
-    if (!token) {
-        addMessage(tab, 'bot', '⚠️ 请先登录');
-        window.location.href = 'login.html';
-        return;
-    }
-    
     // 添加用户消息
     addMessage(tab, 'user', question);
     userInput.value = '';
@@ -75,8 +67,7 @@ async function sendMessage(tab) {
         const response = await fetch(`${CONFIG.apiUrl}/api/chat`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 question: question,
@@ -85,11 +76,6 @@ async function sendMessage(tab) {
         });
         
         if (!response.ok) {
-            if (response.status === 401) {
-                addMessage(tab, 'bot', '⚠️ 登录已过期，请重新登录');
-                setTimeout(() => window.location.href = 'login.html', 2000);
-                return;
-            }
             throw new Error(`API 请求失败: ${response.status}`);
         }
         
