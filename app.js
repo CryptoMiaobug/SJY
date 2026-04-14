@@ -74,6 +74,10 @@ async function sendMessage(tab) {
     sendBtn.innerHTML = '<span class="loading"></span>';
     
     try {
+        // 创建超时控制器
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeout);
+        
         // 调用后端 API
         const response = await fetch(`${CONFIG.apiUrl}/api/chat`, {
             method: 'POST',
@@ -84,8 +88,11 @@ async function sendMessage(tab) {
             body: JSON.stringify({
                 question: question,
                 mode: tab  // 'knowledge' 或 'analysis'
-            })
+            }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         // 移除"正在思考"
         removeThinkingMessage(thinkingId);
@@ -108,7 +115,15 @@ async function sendMessage(tab) {
         console.error('发送失败:', error);
         // 移除"正在思考"
         removeThinkingMessage(thinkingId);
-        addMessage(tab, 'bot', '⚠️ 抱歉，服务暂时不可用，请稍后重试。');
+        
+        let errorMsg = '⚠️ 抱歉，服务暂时不可用，请稍后重试。';
+        if (error.name === 'AbortError') {
+            errorMsg = '⚠️ 请求超时（90秒），请尝试简化问题或稍后重试。';
+        } else if (error.message) {
+            errorMsg = `⚠️ 错误：${error.message}`;
+        }
+        
+        addMessage(tab, 'bot', errorMsg);
     } finally {
         sendBtn.disabled = false;
         sendBtn.textContent = '发送';
