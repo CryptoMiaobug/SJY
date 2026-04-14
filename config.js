@@ -1,7 +1,7 @@
 // API 配置
 const CONFIG = {
     // Cloudflare Tunnel URL
-    apiUrl: 'https://skirts-aspects-seat-items.trycloudflare.com',
+    apiUrl: 'https://inquiries-former-story-motorola.trycloudflare.com',
     
     // 请求超时时间（毫秒）
     timeout: 90000,  // 增加到 90 秒
