@@ -1,6 +1,15 @@
 // 当前激活的标签
 let currentTab = 'knowledge';
 
+// 对话历史（每个标签独立）
+let conversationHistory = {
+    knowledge: [],
+    analysis: []
+};
+
+// 最大保留轮数
+const MAX_HISTORY_TURNS = 20;
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
     // 检查登录状态
@@ -106,7 +115,8 @@ async function sendMessage(tab) {
             },
             body: JSON.stringify({
                 question: question,
-                mode: tab  // 'knowledge' 或 'analysis'
+                mode: tab,  // 'knowledge' 或 'analysis'
+                history: conversationHistory[tab]  // 发送历史记录
             }),
             signal: controller.signal
         });
@@ -126,9 +136,21 @@ async function sendMessage(tab) {
         }
         
         const data = await response.json();
+        const answer = data.answer || '抱歉，我无法回答这个问题。';
         
         // 添加 AI 回复
-        addMessage(tab, 'bot', data.answer || '抱歉，我无法回答这个问题。');
+        addMessage(tab, 'bot', answer);
+        
+        // 保存到历史记录
+        conversationHistory[tab].push(
+            { role: 'user', content: question },
+            { role: 'assistant', content: answer }
+        );
+        
+        // 保留最近 MAX_HISTORY_TURNS 轮对话（每轮 = 1 问 + 1 答）
+        if (conversationHistory[tab].length > MAX_HISTORY_TURNS * 2) {
+            conversationHistory[tab] = conversationHistory[tab].slice(-MAX_HISTORY_TURNS * 2);
+        }
         
     } catch (error) {
         console.error('发送失败:', error);
