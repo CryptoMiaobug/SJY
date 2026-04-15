@@ -1,7 +1,7 @@
 // API 配置
 const CONFIG = {
-    // Cloudflare Tunnel URL
-    apiUrl: 'https://wholesale-ball-gardening-till.trycloudflare.com',
+    // Cloudflare Named Tunnel URL (固定域名)
+    apiUrl: 'https://sjy.miao77.xyz',
     
     // 请求超时时间（毫秒）
     timeout: 90000,  // 增加到 90 秒
