@@ -137,9 +137,12 @@ async function sendMessage(tab) {
         
         const data = await response.json();
         const answer = data.answer || '抱歉，我无法回答这个问题。';
+        const downloadUrl = data.downloadUrl;
+        
+        console.log('[前端] 收到回复:', { answer: answer.substring(0, 50), downloadUrl });
         
         // 添加 AI 回复
-        addMessage(tab, 'bot', answer);
+        addMessage(tab, 'bot', answer, downloadUrl);
         
         // 保存到历史记录
         conversationHistory[tab].push(
@@ -205,7 +208,7 @@ function removeThinkingMessage(thinkingId) {
 }
 
 // 添加消息到聊天区域
-function addMessage(tab, role, content) {
+function addMessage(tab, role, content, downloadUrl = null) {
     const messagesContainer = document.getElementById(`${tab}-messages`);
     
     const messageDiv = document.createElement('div');
@@ -224,6 +227,18 @@ function addMessage(tab, role, content) {
     
     contentDiv.innerHTML = content;
     messageDiv.appendChild(contentDiv);
+    
+    // 如果有下载链接，添加下载按钮
+    if (downloadUrl) {
+        const downloadBtn = document.createElement('a');
+        downloadBtn.href = `${CONFIG.apiUrl}${downloadUrl}`;
+        downloadBtn.className = 'download-btn';
+        downloadBtn.innerHTML = '📥 下载文件';
+        downloadBtn.download = '';
+        downloadBtn.target = '_blank';
+        messageDiv.appendChild(downloadBtn);
+    }
+    
     messagesContainer.appendChild(messageDiv);
     
     // 滚动到底部

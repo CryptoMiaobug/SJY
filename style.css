@@ -179,6 +179,23 @@ header p {
     margin: 5px 0;
 }
 
+/* 下载按钮 */
+.download-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.download-btn:hover {
+    background: #5568d3;
+}
+
 /* 思考中状态 */
 .thinking-message {
     display: flex;
