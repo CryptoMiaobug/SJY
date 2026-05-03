@@ -7,6 +7,12 @@ let conversationHistory = {
     analysis: []
 };
 
+// 待上传文件
+let pendingFiles = {
+    knowledge: null,
+    analysis: null
+};
+
 // 最大保留轮数
 const MAX_HISTORY_TURNS = 20;
 
@@ -68,6 +74,20 @@ document.addEventListener('DOMContentLoaded', () => {
     analysisInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage('analysis');
     });
+
+    // 文件选择监听
+    ['knowledge', 'analysis'].forEach(tab => {
+        const fileInput = document.getElementById(`${tab}-file`);
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    pendingFiles[tab] = file;
+                    showFilePreview(tab, file);
+                }
+            });
+        }
+    });
 });
 
 // 发送消息
@@ -80,7 +100,7 @@ async function sendMessage(tab) {
     const sendBtn = document.getElementById(sendBtnId);
     const question = userInput.value.trim();
     
-    if (!question) return;
+    if (!question && !pendingFiles[tab]) return;
     
     // 获取 token
     const token = localStorage.getItem('token');
@@ -91,8 +111,43 @@ async function sendMessage(tab) {
     }
     
     // 添加用户消息
-    addMessage(tab, 'user', question);
+    const file = pendingFiles[tab];
+    let fileInfo = '';
+    if (file) {
+        fileInfo = `\n📎 附件: ${file.name}`;
+    }
+    addMessage(tab, 'user', question + fileInfo);
     userInput.value = '';
+    
+    // 先上传文件（如果有）
+    let uploadedFile = null;
+    if (file) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            console.log('[上传] 开始上传:', file.name, file.size);
+            const uploadRes = await fetch(`${CONFIG.apiUrl}/api/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            if (uploadRes.ok) {
+                uploadedFile = await uploadRes.json();
+                console.log('[上传] 成功:', uploadedFile);
+            } else {
+                const err = await uploadRes.json().catch(() => ({}));
+                console.error('[上传] 失败:', uploadRes.status, err);
+                addMessage(tab, 'bot', `⚠️ 附件上传失败: ${err.error || uploadRes.statusText}`);
+            }
+        } catch (e) {
+            console.error('[上传] 异常:', e);
+            addMessage(tab, 'bot', `⚠️ 附件上传失败: ${e.message}`);
+        }
+        // 清除文件
+        pendingFiles[tab] = null;
+        removeFilePreview(tab);
+        document.getElementById(`${tab}-file`).value = '';
+    }
     
     // 添加"正在思考"状态
     const thinkingId = addThinkingMessage(tab);
@@ -115,8 +170,9 @@ async function sendMessage(tab) {
             },
             body: JSON.stringify({
                 question: question,
-                mode: tab,  // 'knowledge' 或 'analysis'
-                history: conversationHistory[tab]  // 发送历史记录
+                mode: tab,
+                history: conversationHistory[tab],
+                uploadedFile: uploadedFile ? uploadedFile.savedAs : null
             }),
             signal: controller.signal
         });
@@ -130,6 +186,13 @@ async function sendMessage(tab) {
             if (response.status === 401) {
                 addMessage(tab, 'bot', '⚠️ 登录已过期，请重新登录');
                 setTimeout(() => window.location.href = 'login.html', 2000);
+                return;
+            }
+            if (response.status === 403) {
+                // 权限不足，读取具体错误信息
+                const errorData = await response.json();
+                const errorMsg = errorData.error || '权限不足';
+                addMessage(tab, 'bot', `⚠️ ${errorMsg}`);
                 return;
             }
             throw new Error(`API 请求失败: ${response.status}`);
@@ -174,6 +237,38 @@ async function sendMessage(tab) {
     }
 }
 
+// Bot 头像映射
+const BOT_AVATARS = {
+    knowledge: 'images/解决问题.png',
+    analysis: 'images/代码生成中.png'
+};
+
+// 文件预览
+function showFilePreview(tab, file) {
+    removeFilePreview(tab);
+    const container = document.getElementById(`${tab}-input`).parentElement;
+    const preview = document.createElement('div');
+    preview.className = 'file-preview';
+    preview.id = `${tab}-file-preview`;
+    preview.innerHTML = `
+        <span>📄</span>
+        <span class="file-name" title="${file.name}">${file.name}</span>
+        <span class="file-remove" onclick="clearFile('${tab}')">✕</span>
+    `;
+    container.insertBefore(preview, container.querySelector('input[type=text]'));
+}
+
+function removeFilePreview(tab) {
+    const existing = document.getElementById(`${tab}-file-preview`);
+    if (existing) existing.remove();
+}
+
+function clearFile(tab) {
+    pendingFiles[tab] = null;
+    removeFilePreview(tab);
+    document.getElementById(`${tab}-file`).value = '';
+}
+
 // 添加"正在思考"消息
 function addThinkingMessage(tab) {
     const messagesContainer = document.getElementById(`${tab}-messages`);
@@ -182,7 +277,9 @@ function addThinkingMessage(tab) {
     thinkingDiv.className = 'message bot-message';
     thinkingDiv.id = `thinking-${Date.now()}`;
     
+    const avatar = 'images/需求读懂.png';
     thinkingDiv.innerHTML = `
+        <img src="${avatar}" alt="" class="bot-avatar">
         <div class="thinking-message">
             <span>正在思考</span>
             <div class="thinking-dots">
@@ -226,6 +323,17 @@ function addMessage(tab, role, content, downloadUrl = null) {
     }
     
     contentDiv.innerHTML = content;
+    
+    if (role === 'bot') {
+        // 有下载链接时用"成功"头像
+        const avatarSrc = downloadUrl ? 'images/成功.png' : (BOT_AVATARS[tab] || BOT_AVATARS.knowledge);
+        const avatar = document.createElement('img');
+        avatar.src = avatarSrc;
+        avatar.alt = '';
+        avatar.className = 'bot-avatar';
+        messageDiv.appendChild(avatar);
+    }
+    
     messageDiv.appendChild(contentDiv);
     
     // 如果有下载链接，添加下载按钮

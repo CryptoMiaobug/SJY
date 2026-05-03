@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>设计院 AI 助手</title>
-    <link rel="stylesheet" href="style.css?v=20260416-0834">
+    <title>SJY 财务AI助手</title>
+    <link rel="stylesheet" href="style.css?v=20260429">
 </head>
 <body>
+    <div class="bg-mascot bg-mascot-left"><img src="images/代码生成中.png" alt=""></div>
+    <div class="bg-mascot bg-mascot-right"><img src="images/Coding未来小狮子.png" alt=""></div>
     <div class="container">
         <header>
             <div class="header-content">
-                <div>
-                    <h1>🏢 设计院 AI 助手</h1>
-                    <p>浙江数智交院科技股份有限公司</p>
+                <div class="header-left">
+                    <img src="images/数智交院logo.png" alt="数智交院" class="header-logo">
+                    <div>
+                        <h1>SJY 财务AI助手</h1>
+                        <p>浙江数智交院科技股份有限公司</p>
+                    </div>
                 </div>
                 <button id="logout-btn" class="logout-btn">退出登录</button>
             </div>
@@ -29,6 +34,7 @@
             <div class="chat-container">
                 <div id="knowledge-messages" class="chat-messages">
                     <div class="message bot-message">
+                        <img src="images/解决问题.png" alt="" class="bot-avatar">
                         <div class="message-content">
                             <p>您好！我是财务制度知识库助手。</p>
                             <p>您可以问我关于公司财务制度的问题，例如：</p>
@@ -44,6 +50,10 @@
                 </div>
 
                 <div class="input-container">
+                    <label class="upload-btn" for="knowledge-file" title="上传附件">
+                        📎
+                        <input type="file" id="knowledge-file" class="file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
+                    </label>
                     <input 
                         type="text" 
                         id="knowledge-input" 
@@ -60,6 +70,7 @@
             <div class="chat-container">
                 <div id="analysis-messages" class="chat-messages">
                     <div class="message bot-message">
+                        <img src="images/代码生成中.png" alt="" class="bot-avatar">
                         <div class="message-content">
                             <p>您好！我是财务智能分析助手。</p>
                             <p>您可以问我关于公司财务数据的问题，例如：</p>
@@ -71,12 +82,16 @@
                                 <li>各季度营收对比？</li>
                             </ul>
                             <p>💡 <strong>提示：</strong>您可以要求我把年报发送给您，例如："请把2025年年报发给我"</p>
-                            <p>⚠️ <strong>说明：</strong>因财务数据保密性的要求，本次以勘设股份数据作为演示。</p>
+                            <p>⚠️ 因财务数据保密性的要求，本次以勘设股份数据作为演示。</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="input-container">
+                    <label class="upload-btn" for="analysis-file" title="上传附件">
+                        📎
+                        <input type="file" id="analysis-file" class="file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
+                    </label>
                     <input 
                         type="text" 
                         id="analysis-input" 
@@ -89,11 +104,14 @@
         </div>
 
         <footer>
-            <p>💡 提示：本系统基于公司最新财务制度与财务数据（更新至2026年3月）</p>
+            <div class="footer-content">
+                <img src="images/coding.png" alt="CODING未来" class="footer-logo">
+                <p>本系统基于公司2023-2025年年度报告数据</p>
+            </div>
         </footer>
     </div>
 
-    <script src="config.js?v=20260416-0834"></script>
-    <script src="app.js?v=20260416-0834"></script>
+    <script src="config.js?v=20260429"></script>
+    <script src="app.js?v=20260429"></script>
 </body>
 </html>
